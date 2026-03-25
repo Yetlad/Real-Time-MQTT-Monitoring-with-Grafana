@@ -1,0 +1,49 @@
+import paho.mqtt.client as mqtt
+import time
+import json
+import random
+
+# MQTT Broker settings
+BROKER = "broker.emqx.io"   
+PORT = 1883
+TOPIC = "savonia/Yetunde/temperature"
+
+# Create MQTT client
+client = mqtt.Client()
+
+# Callback when connected
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("Connected to MQTT Broker!")
+    else:
+        print("Failed to connect, return code %d\n", rc)
+
+client.on_connect = on_connect
+
+# Connect to broker
+client.connect(BROKER, PORT, 60)
+
+# Start loop
+client.loop_start()
+
+try:
+    while True:
+        # Simulated sensor data
+        temperature = round(random.uniform(20.0, 35.0), 2)
+
+        payload = {
+            "temperature": temperature,
+            "unit": "C"
+        }
+
+        # Publish message
+        client.publish(TOPIC, json.dumps(payload))
+
+        print(f"Published: {payload}")
+
+        time.sleep(5)
+
+except KeyboardInterrupt:
+    print("Stopping publisher...")
+    client.loop_stop()
+    client.disconnect()
